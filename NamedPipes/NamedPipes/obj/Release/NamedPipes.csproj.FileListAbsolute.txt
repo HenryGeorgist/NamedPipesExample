@@ -1,0 +1,7 @@
+C:\Examples\NamedPipes\NamedPipes\bin\Release\NamedPipes.exe.config
+C:\Examples\NamedPipes\NamedPipes\bin\Release\NamedPipes.exe
+C:\Examples\NamedPipes\NamedPipes\bin\Release\NamedPipes.pdb
+C:\Examples\NamedPipes\NamedPipes\obj\Release\NamedPipes.csprojAssemblyReference.cache
+C:\Examples\NamedPipes\NamedPipes\obj\Release\NamedPipes.csproj.CoreCompileInputs.cache
+C:\Examples\NamedPipes\NamedPipes\obj\Release\NamedPipes.exe
+C:\Examples\NamedPipes\NamedPipes\obj\Release\NamedPipes.pdb
