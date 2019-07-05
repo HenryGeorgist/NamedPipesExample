@@ -43,11 +43,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Abstractions\abstractParserParent.cs" />
+    <Compile Include="Implementations\AEP_Alternative.cs" />
+    <Compile Include="Implementations\AEP_Compute.cs" />
+    <Compile Include="Implementations\Parsers\AEP_Parser.cs" />
+    <Compile Include="Implementations\ParserFactory\ParserFactory.cs" />
+    <Compile Include="Implementations\Parsers\defaultParser.cs" />
+    <Compile Include="Interfaces\iParse.cs" />
+    <Compile Include="Interfaces\iValidate.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -4,3 +4,4 @@ C:\Examples\NamedPipes\NamedPipes\bin\Debug\NamedPipes.pdb
 C:\Examples\NamedPipes\NamedPipes\obj\Debug\NamedPipes.csproj.CoreCompileInputs.cache
 C:\Examples\NamedPipes\NamedPipes\obj\Debug\NamedPipes.exe
 C:\Examples\NamedPipes\NamedPipes\obj\Debug\NamedPipes.pdb
+C:\Examples\NamedPipes\NamedPipes\obj\Debug\NamedPipes.csprojAssemblyReference.cache

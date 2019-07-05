@@ -53,12 +53,19 @@ namespace NamedPipes
 							sw.AutoFlush = true;
 							//this sr.ReadLine() will wait until a message has been sent from the java plugin.
 							message = sr.ReadLine();
-							//process the message (in this example I am creating a temporary file to test the message was recieved and actionable.)
-							using(StreamWriter srOut = new StreamWriter("C:\\Temp\\AEPTesting\\Test.txt", true)){
-								Console.WriteLine("Message Recieved: " + message);
-								srOut.WriteLine("Message Recieved: " + message);
-								System.Threading.Thread.Sleep(5);
+							//process the message 
+							if (!Implementations.ParserFactory.ParserFactory.Instance.parse(message))
+							{
+								if (Implementations.ParserFactory.ParserFactory.Instance.isValid)
+								{
+									sw.WriteLine("Compute Successful!");
+								}
+								else
+								{
+									sw.WriteLine("Compute Failed! " + Implementations.ParserFactory.ParserFactory.Instance.message);
+								}
 							}
+
 							//ensure that the response 
 							sw.WriteLine("Message Recieved: " + message);
 						}
