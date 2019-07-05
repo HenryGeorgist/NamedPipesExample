@@ -37,8 +37,8 @@ public class AepPlugin extends AbstractSelfContainedWatPlugin<AepAlternative> im
     private static final String _pluginVersion = "1.0.0";
     private static final String _pluginSubDirectory = "AEPPlugin";
     private static final String _pluginExtension = ".aep";
-    private static final String _senderPipeName = "AEP_Compute_Pipe_Reciever";
-    private static final String _recieverPipeName = "AEP_Compute_Pipe_Sender";
+    private static final String _senderPipeName = "Named_Pipe_Reciever";
+    private static final String _recieverPipeName = "Named_Pipe_Sender";
     private static final String _RAS_AEPExePath = "/jar/ext/NamedPipes/NamedPipes.exe";
     private RandomAccessFile _senderPipe;
     private RandomAccessFile _recieverPipe;
@@ -140,14 +140,18 @@ public class AepPlugin extends AbstractSelfContainedWatPlugin<AepAlternative> im
     public boolean compute(ModelAlternative ma) {
         AepAlternative alt = getAlt(ma);
         if(alt!=null){
-            alt.setComputeOptions(ma.getComputeOptions());
+            //check to see if alt has data locations, and if they have been linked.
+            //check to see if alt has terrain and point shapefile paths.
+            
+            
             hec2.wat.model.ComputeOptions wco = (hec2.wat.model.ComputeOptions)ma.getComputeOptions();
             WatFrame fr = null;
             fr = hec2.wat.WAT.getWatFrame();
             
             fr.addMessage("Message SENT: Compute Event " + wco.getCurrentEventNumber() + " in Lifecycle " + wco.getCurrentLifecycleNumber());
             int j = 0;
-            while(!messagePipe("Compute Event " + wco.getCurrentEventNumber() + " in Lifecycle " + wco.getCurrentLifecycleNumber())){
+            AepMessageResult result = messagePipe("Compute Event " + wco.getCurrentEventNumber() + " in Lifecycle " + wco.getCurrentLifecycleNumber());
+            while(!result.SuccessfulConnection()){
                 
                 try{
                     Thread.sleep(250);
@@ -156,9 +160,10 @@ public class AepPlugin extends AbstractSelfContainedWatPlugin<AepAlternative> im
                 }
                 j++;
                 fr.addMessage("Retrying connections, Attempt " + (j + 1));
+                result = messagePipe("Compute Event " + wco.getCurrentEventNumber() + " in Lifecycle " + wco.getCurrentLifecycleNumber());
                 if(j>5) return false;
             };
-            return alt.compute();
+            return result.SuccessfulCompute();
         }
         return false;
     }
@@ -192,8 +197,9 @@ public class AepPlugin extends AbstractSelfContainedWatPlugin<AepAlternative> im
         }
         return true;
     }
-    private boolean messagePipe(String message){
+    private AepMessageResult messagePipe(String message){
         WatFrame fr = null;
+        AepMessageResult result = new AepMessageResult();
         fr = hec2.wat.WAT.getWatFrame();
         fr.addMessage("Requested to send message:" + message);
         try {
@@ -205,22 +211,33 @@ public class AepPlugin extends AbstractSelfContainedWatPlugin<AepAlternative> im
                 if(recieverPipe){
                     _recieverPipe.close();
                     
-                    return false;
+                    return result;
                 }
             }else if(!recieverPipe){
                 if(senderPipe){
                     _senderPipe.close();
-                    return false;
+                    return result;
                 }
             }else{
+                result.ConnectionState(true);
                 fr.addMessage("Connections Successful");
             }
             // write to pipe
             _senderPipe.write( message.getBytes() );
             fr.addMessage("Sent message:" + message + " to pipe " + _senderPipeName);
             _senderPipe.close();
-            fr.addMessage(_recieverPipe.readLine());
+            String response = _recieverPipe.readLine();
             _recieverPipe.close();
+            fr.addMessage(response);
+            if(response.contains("Compute Failed!")){
+                fr.addMessage(response);
+                
+                return result;
+            }else{
+                result.ComputeState(true);
+                return result;
+            }
+            
           } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -238,11 +255,14 @@ public class AepPlugin extends AbstractSelfContainedWatPlugin<AepAlternative> im
             }
             
           }
-        return true;
+        return result;
     }
     @Override
     public void editAlternative(AepAlternative e) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        WatFrame fr = null;
+        fr = hec2.wat.WAT.getWatFrame();
+        fr.addMessage("Requested Edit Alternative Action on AEP plugin. Alternative name: " + e._name );
+        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     @Override
     public List<GraphicElement> getGraphicElements(ModelAlternative ma) {
@@ -271,7 +291,7 @@ public class AepPlugin extends AbstractSelfContainedWatPlugin<AepAlternative> im
     @Override
     public boolean close(boolean bln) {
         int j = 0;
-        while(!messagePipe("Exit")){
+        while(!messagePipe("Exit").SuccessfulConnection()){
             j++;
             if(j>5) break;
         };

@@ -5,21 +5,14 @@
  */
 
 package aepplugin;
-import com.rma.io.DssFileManagerImpl;
 import com.rma.io.RmaFile;
 import hec.heclib.dss.DSSPathname;
-import hec.heclib.dss.HecDSSDataAttributes;
-import hec.io.DSSIdentifier;
-import hec.io.TimeSeriesContainer;
 import hec2.model.DataLocation;
 import hec2.plugin.PathnameUtilities;
-import hec2.plugin.model.ComputeOptions;
 import hec2.plugin.model.ModelAlternative;
 import hec2.plugin.selfcontained.SelfContainedPluginAlt;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.jdom.Document;
 import org.jdom.Element;
 /**
@@ -32,8 +25,20 @@ public class AepAlternative extends SelfContainedPluginAlt{
     private static final String DocumentRoot = "AEPAlternative";
     private static final String AlternativeNameAttribute = "Name";
     private static final String AlternativeDescriptionAttribute = "Desc";
-    private ComputeOptions _computeOptions;
-    private double _maxVal;
+    private String _pointShapeFilePath;
+    private String _terrainFilePath;
+    public String getTerrainFilePath(){
+        return _terrainFilePath;
+    }
+    public String getPointShapeFilePath(){
+        return _pointShapeFilePath;
+    }
+    public void setTerrainFilePath(String path){
+        _terrainFilePath = path;
+    }
+    public void setPointShapeFilePath(String path){
+        _pointShapeFilePath = path;
+    }
     public AepAlternative(){
         super();
         _dataLocations = new ArrayList<>();
@@ -93,71 +98,34 @@ public class AepAlternative extends SelfContainedPluginAlt{
     }
     private List<DataLocation> defaultDataLocations(){
        	if(!_dataLocations.isEmpty()){
-            //locations have previously been set (most likely from reading
-            //in an existing alternative file.
-            for(DataLocation dl : _dataLocations){
-                String dlparts = dl.getDssPath();
-                DSSPathname p = new DSSPathname(dlparts);
-                if(p.aPart()==""&&p.bPart()==""&&p.cPart()==""&&p.dPart()==""&&p.ePart()==""&&p.fPart()==""){
-                    if(validLinkedToDssPath(dl)){
-                        setDssParts(dl);
-                    }
-                }
-            }
             return _dataLocations;
         }
         List<DataLocation> dlList = new ArrayList<>();
         //create a default location so that links can be initialized.
         DataLocation dloc = new DataLocation(this.getModelAlt(),"RAS_Output","RAS HDF Output");
+        DataLocation dlocTerrain = new DataLocation(this.getModelAlt(),"RAS_Terrain","RAS Terrain File");
+        DataLocation dlocPoints = new DataLocation(this.getModelAlt(),"Point Shapefile","Point Shapefile File");
         dlList.add(dloc);
+        dlList.add(dlocTerrain);
+        dlList.add(dlocPoints);
 	return dlList; 
     }
     public boolean setDataLocations(List<DataLocation> dataLocations){
         boolean retval = false;
+        
+        //need to store terrain file and point shapefile paths
         for(DataLocation dl : dataLocations){
             if(!_dataLocations.contains(dl)){
-                DataLocation linkedTo = dl.getLinkedToLocation();
-                String dssPath = linkedTo.getDssPath();
-                if(validLinkedToDssPath(dl))
-                {
-                    setModified(true);
-                    setDssParts(dl);
-                    _dataLocations.add(dl);
-                    retval = true;
-                }
+                setModified(true);
+                _dataLocations.add(dl);
+                retval = true;
             }else{
-                DataLocation linkedTo = dl.getLinkedToLocation();
-                String dssPath = linkedTo.getDssPath();
-                if(validLinkedToDssPath(dl))
-                {
-                    setModified(true);
-                    setDssParts(dl);;
-                    retval = true;
-                }
+                setModified(true);
+                retval = true;
             }
         }
         if(retval)saveData();
 	return retval;
-    }
-    private boolean validLinkedToDssPath(DataLocation dl){
-        DataLocation linkedTo = dl.getLinkedToLocation();
-        String dssPath = linkedTo.getDssPath();
-        return !(dssPath == null || dssPath.isEmpty());
-    }
-    private void setDssParts(DataLocation dl){
-        DataLocation linkedTo = dl.getLinkedToLocation();
-        String dssPath = linkedTo.getDssPath();
-        DSSPathname p = new DSSPathname(dssPath);
-        String[] parts = p.getParts();
-        parts[1] = parts[1] + " Output";
-        ModelAlternative malt = this.getModelAlt();
-        malt.setProgram(AepPlugin.PluginName);
-        parts[5] = "C000000:" + _name + ":" + PathnameUtilities.getWatFPartModelPart(malt);
-        p.setParts(parts);
-        dl.setDssPath(p.getPathname());
-    }
-    public void setComputeOptions(ComputeOptions opts){
-        _computeOptions = opts;
     }
     @Override
     public boolean isComputable() {
