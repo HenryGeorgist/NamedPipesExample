@@ -48,9 +48,11 @@
     <Compile Include="Implementations\AEP_Compute.cs" />
     <Compile Include="Implementations\Parsers\AEP_Parser.cs" />
     <Compile Include="Implementations\ParserFactory\ParserFactory.cs" />
+    <Compile Include="Implementations\Parsers\Alternative_Parser.cs" />
     <Compile Include="Implementations\Parsers\defaultParser.cs" />
     <Compile Include="Interfaces\iParse.cs" />
     <Compile Include="Interfaces\iValidate.cs" />
+    <Compile Include="NamedPipeConnection.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
